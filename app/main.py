@@ -1,16 +1,10 @@
 from fastapi import FastAPI
-from app.core.database import engine, Base
-from app.routes import auth, users, properties, bookings
 from fastapi.middleware.cors import CORSMiddleware
-import asyncio
+from app.core.database import engine, Base
 
-app = FastAPI(
-    title="Rental Management API",
-    description="API for property rentals and bookings",
-    version="0.1.0"
-)
+app = FastAPI()
 
-# CORS Configuration
+# CORS Setup (keep your existing if you have it)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,21 +13,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routes
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(properties.router)
-app.include_router(bookings.router)
-
+# Database lifecycle events
 @app.on_event("startup")
 async def startup():
-    # Test connection first
-    async with engine.connect() as conn:
-        await conn.execute("SELECT 1")
-    # Create tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
 @app.on_event("shutdown")
 async def shutdown():
     await engine.dispose()
+
+# Import routers AFTER app creation to avoid circular imports
+from app.api.routes import router  # Keep your existing import path
+app.include_router(router, prefix="/api")  # Add prefix if needed
+
+# Keep any other existing app configurations

@@ -1,16 +1,17 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    DATABASE_URL: str
-    SECRET_KEY: str
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    DATABASE_URL: str  # Only need connection string for NeonDB
     
- 
-
+    # Remove these if they exist:
+    # POSTGRES_USER: str
+    # POSTGRES_PASSWORD: str  
+    # POSTGRES_DB: str
+    
     class Config:
-        from_attributes = True
         env_file = ".env"
-        extra = "ignore"  # This allows extra environment variables
+        env_file_encoding = 'utf-8'
+        extra = "ignore"  # Important for security
 
+# Keep this instantiation
 settings = Settings()

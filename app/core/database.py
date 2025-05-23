@@ -1,25 +1,19 @@
+# COMPLETELY REPLACE the existing file with:
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.pool import NullPool
 from .config import settings
-import asyncio
 
-Base = declarative_base()
+# MUST use asyncpg and NullPool for NeonDB
+SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL.replace(
+    "postgresql://", "postgresql+asyncpg://"
+)
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    SQLALCHEMY_DATABASE_URL,
     echo=True,
-    pool_pre_ping=True,
-    pool_recycle=3600,
-    future=True
+    poolclass=NullPool  # Critical for serverless DBs
 )
 
-# Use async_sessionmaker instead of sessionmaker
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    expire_on_commit=False,
-    class_=AsyncSession
-)
-
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        yield session
+SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+Base = declarative_base()
