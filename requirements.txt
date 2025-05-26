@@ -8,3 +8,5 @@ gunicorn==23.0.0
 uvicorn[standard]==0.29.0
 email-validator==2.1.1
 cryptography>=42.0.0  # You likely already have this via FastAPI
+python-jose==3.3.0
+passlib[bcrypt]==1.7.4
